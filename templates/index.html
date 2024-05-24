@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minesweeper</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f5f5;
+            font-family: 'Arial', sans-serif;
+        }
+
+        h1, #minesweeper-board, form {
+            margin-bottom: 20px;
+        }
+
+        pre {
+            font-family: 'Arial', sans-serif;
+            font-size: 18px;
+            cursor: pointer;
+            display: inline-block;
+            padding: 15px;
+            border: 1px solid #b2d8d8;
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            box-sizing: border-box;
+            margin: -1px 0 0 -1px;
+            background-color: #d5e8e8;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        pre.dug {
+            background-color: #c1d4d4;
+        }
+
+        pre.flagged {
+            color: #ff4d4d;
+        }
+
+        #minesweeper-board {
+            display: grid;
+            grid-template-columns: repeat({{ board.boardLen }}, 40px);
+            grid-template-rows: repeat({{ board.boardLen }}, 40px);
+            grid-gap: 0;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    button {
+        font-family: 'Arial', sans-serif;
+        font-size: 16px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        margin-top: 10px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+        background-color: #45a049;
+    }
+
+    </style>
+
+</head>
+<body>
+    <h1>Minesweeper</h1>
+    <h2>{{ message }}</h2>
+    <div id="minesweeper-board">
+        {% for row in range(board.boardLen) %}
+            {% for col in range(board.boardLen) %}
+                {% set cell = board[row][col] if (row, col) in board.dug else ' ' %}
+                {% if (row, col) in board.flagged %}
+                    <pre id="cell-{{ row }}-{{ col }}" class="flagged" onclick="revealCell({{ row }}, {{ col }}); return false;" oncontextmenu="flagCell({{ row }}, {{ col }}); return false;">🚩</pre>
+                {% else %}
+                    <pre id="cell-{{ row }}-{{ col }}" class="{% if (row, col) in board.dug %}dug{% endif %}" onclick="revealCell({{ row }}, {{ col }}); return false;" oncontextmenu="flagCell({{ row }}, {{ col }}); return false;">{{ cell }}</pre>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    </div>
+    <form action="{{ url_for('reset') }}" method="get">
+        <button type="submit">Play Again</button>
+    </form>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('#minesweeper-board pre').forEach(function (cell) {
+                cell.addEventListener('click', function (event) {
+                    var coords = event.target.id.split('-').slice(1).map(Number);
+                    revealCell(coords[0], coords[1]);
+                });
+
+                cell.addEventListener('contextmenu', function (event) {
+                    event.preventDefault(); 
+                    var coords = event.target.id.split('-').slice(1).map(Number);
+                    flagCell(coords[0], coords[1]);
+                });
+            });
+        });
+
+        function revealCell(row, col) {
+            document.location.href = `/play?row=${row}&col=${col}`;
+        }
+
+        function flagCell(row, col) {
+            document.location.href = `/flag?row=${row}&col=${col}`;
+        }
+    </script>
+</body>
+</html>
